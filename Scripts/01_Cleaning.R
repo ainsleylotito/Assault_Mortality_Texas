@@ -32,7 +32,7 @@ tail(pre_18_f)
 
 #we need to wait to make it a time series object until we've merged the data from before!! 
 
-rawdata_female <- read_excel("./RawData/Repro_Assault_Post_2018/Female.xlsx")
+rawdata_female <- read_excel("RawData/Repro_Asault_Post_2018/Female.xlsx")
 f_post_18 <- rawdata_female %>% 
   mutate(month_year = my(Month),
          Deaths = na_if(as.character(Deaths), "Suppressed"),
@@ -46,8 +46,7 @@ tail(f_post_18)
 
 f_post_18 <- f_post_18 %>% 
   mutate(month_year = ymd(month_year),
-         month = yearmonth(month_year)) %>% 
-  select(-sex,-time)
+         month = yearmonth(month_year))
 head(f_post_18)  
 tail(f_post_18) 
 #84 observations
@@ -85,12 +84,19 @@ tail(pre_18_m)
 #228 observations
 
 #we need to wait to make it a time series object until we've merged the data from before!! 
-m_post_18 <- read.csv("./CleanData/monthly_m.csv") 
+rawdata_male <- read_excel("RawData/Repro_Asault_Post_2018/Male.xlsx") 
+m_post_18 <- rawdata_male %>% 
+  mutate(month_year = my(Month),
+         Deaths = na_if(as.character(Deaths), "Suppressed"),
+         Deaths = as.numeric(Deaths)) %>% 
+  filter(!is.na(month_year)) %>%   # removing the blank rows
+  select(-Notes,-Population,-"Crude Rate", -Month, -"Month Code", 
+         -"Crude Rate Lower 95% Confidence Interval", 
+         -"Crude Rate Upper 95% Confidence Interval")
 glimpse(m_post_18)
 m_post_18 <- m_post_18 %>% 
   mutate(month_year = ymd(month_year),
-         month = yearmonth(month_year)) %>% 
-  select(-time)
+         month = yearmonth(month_year)) 
 head(m_post_18)  
 tail(m_post_18)
 #84 observations 

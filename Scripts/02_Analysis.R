@@ -17,9 +17,11 @@ source("./Scripts/functions.r")
 
 #Loading the datafiles previously cleaned 
 
-female_full <- read.csv("../CleanData/female_full.csv") 
+female_full <- read.csv("./CleanData/female_full.csv")  
+male_full <- read.csv("./CleanData/male_full.csv")
 
-# Female Descriptive ---- 
+# Female analysis ----
+##  Descriptive ---- 
 
 #whole study period
 female_full %>%
@@ -270,11 +272,11 @@ ggsave(
 )
  
 
-# Male analysis  
+# Male analysis ---- 
 
 male_full <- read.csv("./CleanData/male_full.csv")
 
-#  Descriptive ----  
+##  Descriptive ----  
 
 #whole study period
 male_full %>%
