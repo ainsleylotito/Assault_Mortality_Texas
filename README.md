@@ -1,0 +1,110 @@
+README
+================
+
+## Overview
+
+This repository contains code and data for analyzing mortality by
+assault trends among Texas residents following the passing of Texas
+Senate Bill 8 in June of 2021 (banning abortion after 6 weeks of
+gestation).
+
+## Data
+
+Raw datafiles are in the `/RawData` directory. All mortality data are
+among reproductive aged (15-44 y/o) Texas Residents where the primary
+cause of death is assault (ICD-10 Codes X85-Y09)  
+The `/Repro_Assault_Pre_2018` folder contains monthly death data from
+**January, 1999** to **December, 2017**. There are two datafiles, one
+for females and one for males.
+
+Likewise, `/Repro_Assault_Post_2018` folder contains monthly death data
+from **January, 2018** to **December, 2024**. There are also two
+datafiles, one for females and one for males.
+
+### Data source:
+
+**CDC National Center for Health Statistics**
+
+Monthly assault mortality data were obtained from the National Vital
+Statistics System’s [*Multiple Cause of Death
+Files*](https://wonder.cdc.gov/controller/datarequest/D176;jsessionid=00DFC3FA02078138B9B9D96AB5C6).
+These data include monthly counts of deaths stratified by demographic
+characteristics and cause of death and are publicly available through
+the CDC WONDER Online Database. Details about the dataset sources are
+available at [this
+link](https://wonder.cdc.gov/wonder/help/mcd-provisional.html#)
+
+## Methods
+
+Data are cleaned in the `Scripts/01_Cleaning.R` file. Cleaned datasets
+are in the `/CleanData` Directory.
+
+There are several studies that use the interrupted time series ARIMA,
+but we are replicating the methods described in [Singh et al.,
+2025](https://link.springer.com/article/10.1007/s00127-025-02902-7), a
+study which analyzes suicide deaths among reproductive-aged women
+post-*Dobbs*.
+
+The ARIMA’s autoregressive (AR) component should allow us to capture the
+relationship between current assault mortality counts and past
+observations. The moving average (MA) will model the residuals from
+previous time points (accounting for irregular fluctuations). The
+seasonality/trends that change over time will be addressed through
+differencing (“integrated”), which will remove secular trends and
+stabilize the mean.
+
+We will use the following methodology, taking heavy inspriation from
+Singh et al. (2025) in the following steps:
+
+1.  Use the FABLE algorithm to identify the ARIMA signature of the
+    monthly assault counts, using step and ramp variables to model the
+    interruption point effect of Bill-8. To do so, we adapted code
+    provided by [Jonathan Corbin (2024) to fit an interrupted time
+    series using ARIMA
+    models](https://rpubs.com/jcorbin/tidy_itt_arima).
+
+2.  Use the ARIMA signature for pre-Bill 8 data (setting the step and
+    ramp variables to 0) to forecast (predict) values of the outcome for
+    the 43-month period post-Bill 8 (i.e. July 2021 - December 2024).
+    These predicted/fitted values will serve as counterfactuals and
+    reflect the expected monthly count of female assault deaths if Bill
+    8 had not been passed.
+
+3.  Use the ARIMA signature identified in step 1 and expected values
+    from step 2 to obtain residual values (observed less fitted) of our
+    outcome series.
+
+4.  Use the pre-Bill 8 standard error of residuals to develop pre-Bill 8
+    95% confidence intervals (CI; prediction interval of monthly series
+    of assault mortalities among Texas resident reproductive-aged women
+    overall from January 2018 - August 2021). Extend the pre-Bill 8
+    prediction interval to the full residual series (January 1999 -
+    December 2024). Next, note whether any residuals deviated from this
+    prediction interval post-Bill 8 (i.e., July 2021 onward.)
+
+5.  If the outcome series exhibited outliers in the post-Bill 8 period
+    following step 4, calculate the excess deaths for those months by
+    subtracting the observed death count from the forecasted
+    counterfactual death count.
+
+2-tailed tests with significance level of p \< 0.05 will be used.
+
+### Package information
+
+All analyses were conducted using R v.5.4. The following packages and
+package versions were used in this analysis:
+
+- `tidyverse` v.2.0.0
+- `broom` v.1.0.10
+- `tsibble` v.1.1.6
+- `fable` v.0.5.0
+- `feasts` v.0.4.2
+
+## Reproducibility
+
+All analyses can be reproduced by downloading the repository and running
+the scripts in the `/Scripts` directory in order (01 then 02).
+
+*Note:* The analysis, `02_Analysis.R` will not run without the functions
+in the `functions.R` file being loaded or downloaded with the
+repository.
