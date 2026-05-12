@@ -15,10 +15,16 @@ library(forecast)
 getwd()
 source("./Scripts/functions.r") 
 
-#Loading the datafiles previously cleaned 
+#Loading the datafiles previously cleaned, making sure they have the right variable types 
+female_full <- read.csv("./CleanData/female_full.csv") 
+female_full <- female_full %>% 
+  mutate(month_year = ymd(month_year),
+         month = yearmonth(month_year))
 
-female_full <- read.csv("./CleanData/female_full.csv")  
-male_full <- read.csv("./CleanData/male_full.csv")
+male_full <- read.csv("./CleanData/male_full.csv") 
+male_full <- male_full %>% 
+  mutate(month_year = ymd(month_year),
+         month = yearmonth(month_year))
 
 # Female analysis ----
 ##  Descriptive ---- 
@@ -300,7 +306,6 @@ male_full %>%
     .groups = "drop"
   ) 
 #turning into ts 
-
 
 m_ts <- male_full %>%
   as_tsibble(index = month)
