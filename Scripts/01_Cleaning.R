@@ -32,7 +32,7 @@ tail(pre_18_f)
 
 #we need to wait to make it a time series object until we've merged the data from before!! 
 
-rawdata_female <- read_excel("../RawData/Repro_Assault_Post_2018/Female.xlsx") 
+rawdata_female <- read_excel("./RawData/Repro_Assault_Post_2018/Female.xlsx")
 f_post_18 <- rawdata_female %>% 
   mutate(month_year = my(Month),
          Deaths = na_if(as.character(Deaths), "Suppressed"),
