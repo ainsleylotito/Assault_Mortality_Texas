@@ -1,4 +1,3 @@
-
 library(tidyverse)
 library(ggplot2) 
 library(readxl) 
@@ -14,44 +13,11 @@ library(fable)
 library(feasts) 
 library(forecast)  
 getwd()
-source("./Scripts/functions.r")
+source("./Scripts/functions.r") 
 
+#Loading the datafiles previously cleaned 
 
-
-#cleaning data: 
-pre_18_f <- read.csv("./RawData/Repro_Assault_Pre_2018/Female.csv")
-pre_18_f <- pre_18_f %>%  
-  filter(Month != "") %>% 
-  mutate(month_year = my(Month),
-         month = yearmonth(month_year),
-         Deaths = na_if(as.character(Deaths), "Suppressed"),
-         Deaths = as.numeric(Deaths),) %>% 
-  select(-Notes,-Population,-"Crude.Rate", -Month, -"Month.Code")  
-head(pre_18_f) 
-tail(pre_18_f) 
-#228 observations
-
-#we need to wait to make it a time series object until we've merged the data from before!! 
-f_post_18 <- read.csv("./CleanData/monthly_f.csv") 
-glimpse(f_post_18)
-f_post_18 <- f_post_18 %>% 
-  mutate(month_year = ymd(month_year),
-         month = yearmonth(month_year)) %>% 
-  select(-sex,-time)
-head(f_post_18)  
-tail(f_post_18) 
-#84 observations
-
-
-range(pre_18_f$month_year)
-range(f_post_18$month_year)
-
-female_full <- bind_rows(pre_18_f,f_post_18) 
-female_full <- female_full %>% 
-  mutate( time = row_number())
-head(female_full)
-tail(female_full) 
-glimpse(female_full) 
+female_full <- read.csv("../CleanData/female_full.csv") 
 
 # Female Descriptive ---- 
 
@@ -302,46 +268,13 @@ ggsave(
   width = 12, 
   height = 6
 )
+ 
 
-# MALE VERSION---- 
-#cleaning data: 
-pre_18_m <- read.csv("./RawData/Repro_Assault_Pre_2018/Male.csv")
-pre_18_m <- pre_18_m %>%  
-  filter(Month != "") %>% 
-  mutate(month_year = my(Month),
-         month = yearmonth(month_year),
-         Deaths = na_if(as.character(Deaths), "Suppressed"),
-         Deaths = as.numeric(Deaths),) %>% 
-  select(-Notes,-Population,-"Crude.Rate", -Month, -"Month.Code")  
-head(pre_18_m)
-tail(pre_18_m) 
-#228 observations
+# Male analysis  
 
-#we need to wait to make it a time series object until we've merged the data from before!! 
-m_post_18 <- read.csv("./CleanData/monthly_m.csv") 
-glimpse(m_post_18)
-m_post_18 <- m_post_18 %>% 
-  mutate(month_year = ymd(month_year),
-         month = yearmonth(month_year)) %>% 
-  select(-time)
-head(m_post_18)  
-tail(m_post_18)
-#84 observations 
+male_full <- read.csv("./CleanData/male_full.csv")
 
-
-range(pre_18_m$month_year)
-range(m_post_18$month_year)
-
-male_full <- bind_rows(pre_18_m,m_post_18) 
-male_full <- male_full %>% 
-  mutate( time = row_number())
-head(male_full)
-tail(male_full) 
-glimpse(male_full)
-#correct number of observations  
-
-
-# Male Descriptive ---- 
+#  Descriptive ----  
 
 #whole study period
 male_full %>%
