@@ -1,18 +1,10 @@
 library(tidyverse)
-library(ggplot2) 
-library(readxl) 
-library(lubridate)
 library(broom)
-library(viridis)
-library(tsModel)
-library(scales)
-library(grid) 
-library(tseries) 
 library(tsibble) 
 library(fable)
 library(feasts) 
-library(forecast)  
-getwd()
+  
+
 source("./Scripts/functions.r") 
 
 #Loading the datafiles previously cleaned, making sure they have the right variable types 
