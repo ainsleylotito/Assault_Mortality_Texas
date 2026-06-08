@@ -37,16 +37,26 @@ fit_arima <- function(ts_data){
   
 }
 
-counterfactual_forecast <- function(ts_data, intervention_date, horizon){
+counterfactual_forecast <- function(model_fit,
+                                    ts_data,
+                                    intervention_date){
   
-  model_cf <- ts_data %>%
-    filter(month < make_yearmonth(year(intervention_date),
-                                  month(intervention_date))) %>%
-    model(
-      arima_null = ARIMA(Deaths, stepwise = FALSE)
+  intervention_month <- make_yearmonth(
+    year(intervention_date),
+    month(intervention_date)
+  )
+  
+  cf_data <- ts_data %>%
+    filter(month >= intervention_month) %>%
+    mutate(
+      step = 0,
+      ramp = 0
     )
   
-  forecast(model_cf, h = horizon)
+  forecast(
+    model_fit,
+    new_data = cf_data
+  )
   
 }
 

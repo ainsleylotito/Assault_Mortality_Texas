@@ -71,7 +71,11 @@ f_arima <- fit_arima(f_ts)
 report(f_arima)  
 
 #tidying up my output: 
-tidy(f_arima) 
+tidy(f_arima) %>% 
+  mutate( p.value = format(p.value, scientific = FALSE, digits = 4),
+          std.error = round(std.error, 2), 
+          estimate = round(estimate,2),
+          p.value= round(as.numeric(p.value),2))
 
 ## diagnostics ---- 
 f_arima %>% gg_tsresiduals() 
@@ -80,8 +84,9 @@ augment(f_arima) %>% features(.resid, ljung_box)
 ### excess deaths ---- 
 
 # Forecast the next 43 periods (e.g., months)
-# Create counterfactual version of observed months
+# Create counterfactual version for NEW months
 f_cf_data <- f_ts %>%
+  filter(month >= make_yearmonth(2021, 6)) %>%
   mutate(
     step = 0,
     ramp = 0
@@ -108,12 +113,16 @@ excess_deaths_f <- f_cf_preds %>%
   )
 
 excess_deaths_f %>% 
-  slice(270:300)
+  arrange(desc(excess_deaths))
 
 
 
 #counterfactual forecast
-fc_f <- counterfactual_forecast(f_ts, "2021-06-01", 43)
+fc_f <- counterfactual_forecast(
+  model_fit = f_arima,
+  ts_data = f_ts,
+  intervention_date = "2021-06-01"
+)
 
 plot_counterfactual(
   fc_f,
@@ -269,6 +278,107 @@ ggsave(
   height = 6
 )
  
+#making a version of the graph that also highlights the point 
+# that are excessive low deaths 
+resid_graph2 <- ggplot(f_resid, aes(x = month, y = .resid)) +
+  
+  # Residual line + points
+  geom_line(aes(color = "ARIMA-derived residuals"), linewidth = 0.7) +
+  
+  geom_point(aes(color = "ARIMA-derived residuals"),
+             size = 1.5) +
+  
+  # red circles for post-interruption outliers upper limit
+  geom_point(
+    data = f_resid %>%
+      filter(
+        month >= make_yearmonth(2021, 6),
+        .resid > 1.96 * resid_sd | .resid < -1.96 * resid_sd 
+      ),
+    shape = 21,
+    stroke = 1.2,
+    color = "red",
+    fill = NA,
+    size = 4
+  ) +
+  
+  # Zero reference line
+  geom_hline(yintercept = 0,
+             color = "blue") +
+  
+  # 95% confidence interval lines
+  geom_hline(
+    aes(yintercept = -1.96 * resid_sd,
+        linetype = "95% Confidence Interval"),
+    color = "black"
+  ) +
+  
+  geom_hline(
+    aes(yintercept = 1.96 * resid_sd,
+        linetype = "95% Confidence Interval"),
+    color = "black"
+  ) +
+  
+  # Bill 8 intervention line
+  geom_vline(
+    xintercept = make_yearmonth(2021, 6),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  
+  scale_color_manual(
+    name = NULL,
+    values = c("ARIMA-derived residuals" = "navy")
+  ) +
+  
+  scale_linetype_manual(
+    name = NULL,
+    values = c("95% Confidence Interval" = "dashed")
+  ) +
+  
+  scale_x_yearmonth(
+    date_breaks = "6 months",
+    date_labels = "%b %Y"
+  ) +
+  
+  labs(
+    y = "ARIMA-derived residuals of monthly 
+    assault death counts among 15-44-year-old 
+    Texan women",
+    x = "Time (Monthly)"
+  ) +
+  
+  coord_cartesian(
+    xlim = c(make_yearmonth(1999, 1),
+             make_yearmonth(2024, 12))
+  ) +
+  
+  theme_classic() +
+  
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom"
+  ) +
+  
+  annotate(
+    "text",
+    x = make_yearmonth(2021, 6),
+    y = max(f_resid$.resid, na.rm = TRUE),
+    label = "Bill 8 (June 2021)",
+    color = "red",
+    vjust = -0.5,
+    hjust = 0.5,
+    angle = 0,
+    size = 3
+  )
+ggsave(
+  filename = "Female_Resid_Graph2.png",
+  plot = resid_graph2,
+  path = "./Output",
+  width = 12, 
+  height = 6
+)
+
 
 # Male analysis ---- 
 
@@ -300,6 +410,7 @@ male_full %>%
 #turning into ts 
 
 m_ts <- male_full %>%
+  mutate(month = yearmonth(month_year)) %>% 
   as_tsibble(index = month)
 
 #arima  
@@ -328,7 +439,11 @@ m_arima %>% gg_tsresiduals()
 augment(m_arima) %>% features(.resid, ljung_box)
 
 #tidying up my output: 
-tidy(m_arima)
+tidy(m_arima) %>% 
+  mutate( p.value = format(p.value, scientific = FALSE, digits = 4),
+          std.error = round(std.error, 2), 
+          estimate = round(estimate,2),
+          p.value= round(as.numeric(p.value),2))
 
 ### excess deaths ---- 
 
