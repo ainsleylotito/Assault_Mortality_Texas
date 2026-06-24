@@ -44,12 +44,73 @@ female_full %>%
   ) 
 
 
-#correct number of observations 
+#correct number of observations  
+
+
+
+
+
 #turning into ts 
 
 
 f_ts <- female_full %>%
-  as_tsibble(index = month)
+  as_tsibble(index = month) 
+
+#Female death graph---- 
+raw_death_plot <- ggplot(female_full, aes(x = month, y = Deaths)) +
+  geom_point()+ 
+  geom_line()+
+
+  # Bill 8 intervention line
+  geom_vline(
+    xintercept = make_yearmonth(2021, 6),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  
+  scale_x_yearmonth(
+    date_breaks = "6 months",
+    date_labels = "%b %Y"
+  ) +
+  
+  labs(
+    y = "Monthly 
+    assault death counts among 15-44-year-old 
+    Texan women",
+    x = "Time (Monthly)"
+  ) +
+  
+  coord_cartesian(
+    xlim = c(make_yearmonth(1999, 1),
+             make_yearmonth(2024, 12))
+  ) +
+  
+  theme_classic() +
+  
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom"
+  ) +
+  
+  annotate(
+    "text",
+    x = make_yearmonth(2021, 6),
+    y = max(female_full$Deaths, na.rm = TRUE),
+    label = "Bill 8 (June 2021)",
+    color = "red",
+    vjust = -0.5,
+    hjust = 0.5,
+    angle = 0,
+    size = 3
+  )
+ggsave(
+  filename = "Female_Raw_Deaths.png",
+  plot = raw_death_plot,
+  path = "./Output",
+  width = 12, 
+  height = 6
+)
+
 
 #arima  
 f_ts <- create_intervention(f_ts, "2021-06-01")
