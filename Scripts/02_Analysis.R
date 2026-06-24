@@ -135,13 +135,14 @@ plot_counterfactual(
 ## Female Graph ----
 #now let's try customizing the graph:  
 
-autoplot(fc_f, f_ts, level = 95) +
+arima_graph <- autoplot(fc_f, f_ts, level = 95) +
   geom_vline(
     xintercept = make_yearmonth(2021, 6),
     linetype = "dashed",
     color = "grey40"
   ) + 
-  scale_x_yearmonth(date_breaks = "6 months", date_labels = "%b %Y") + 
+  scale_x_yearmonth(date_breaks = "6 months", date_labels = "%b %Y") +  
+  scale_y_continuous(breaks = c(0,5,10,15,20,25,30,35))+
   labs( y = "Monthly Female Assault Deaths", x = "Time (Monthly)" ) +
   coord_cartesian(xlim = c(make_yearmonth(1999, 1), make_yearmonth(2024, 12)))+
   theme_minimal() + 
@@ -152,7 +153,15 @@ autoplot(fc_f, f_ts, level = 95) +
            label = "Bill 8 Ruling (June 2021)",
            vjust = -1,
            angle = 90,
-           size = 3)  
+           size = 3) 
+
+ggsave(
+  filename = "Female_ARIMA_Graph.png",
+  plot = arima_graph,
+  path = "./Output",
+  width = 12, 
+  height = 6
+)
 
 ### Residual graph -----
 
